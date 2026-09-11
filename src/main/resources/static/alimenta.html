@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Alimenta — rede local de doação de alimentos. PoC acadêmica alinhada ao ODS 2.">
+  <title>Alimenta · Doar aproxima</title>
+  <style>
+    :root { --ink:#203b32; --green:#215641; --light:#edf3e9; --paper:#faf9f5; --line:#dce2d8; --orange:#f0b174; --muted:#627267; --red:#9d3731 }
+    * { box-sizing:border-box } body { margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,sans-serif }
+    button,input,select { font:inherit } button,a,input,select { -webkit-tap-highlight-color:transparent }
+    button,a { touch-action:manipulation } button { cursor:pointer } button:disabled { cursor:wait;opacity:.5 }
+    a { color:var(--green) } :focus-visible { outline:3px solid #c78b48;outline-offset:3px }
+    header { border-bottom:1px solid var(--line);background:#fffdf8 } .bar { max-width:1280px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:20px 32px;gap:16px }
+    .brand { font-size:27px;font-weight:800;letter-spacing:-1px;text-decoration:none;display:flex;align-items:center;gap:10px }.mark { background:var(--green);color:white;border-radius:50% 50% 12% 50%;width:36px;height:36px;text-align:center;font-size:24px }
+    nav { display:flex;gap:20px;align-items:center;font-size:14px } nav a { text-decoration:none }.ods { padding:7px 12px;border:1px solid var(--line);border-radius:24px;font-size:12px;font-weight:700 }
+    main { max-width:1280px;margin:auto;padding:36px 32px 60px }.hero { display:grid;grid-template-columns:1.5fr 1fr;gap:30px;align-items:center;margin-bottom:30px }.eyebrow { letter-spacing:2px;text-transform:uppercase;font-size:11px;font-weight:750;color:var(--green) }
+    h1 { font:normal clamp(36px,4.8vw,62px)/1.05 Georgia,serif;letter-spacing:-2px;max-width:700px;margin:12px 0 18px } h1 em { color:#758f45;font-weight:normal } .intro { color:var(--muted);max-width:540px;margin:0 }
+    .note { border-left:3px solid var(--orange);padding:12px 20px;font-size:14px;color:var(--muted) }.note strong { color:var(--ink);display:block;margin-bottom:7px }
+    .stats { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0 }.stat { background:var(--light);border:1px solid var(--line);padding:16px 22px;border-radius:14px }.stat b { font:32px Georgia;display:block }.stat span { font-size:13px;color:var(--muted) }
+    .tabs { display:flex;gap:7px;border-bottom:1px solid var(--line);margin-bottom:24px }.tab { border:0;background:none;color:var(--muted);padding:13px 21px;border-bottom:3px solid transparent }.tab[aria-selected=true] { color:var(--green);font-weight:750;border-color:var(--green) }
+    .workspace { display:grid;grid-template-columns:340px 1fr;gap:26px;align-items:start }.panel { background:white;border:1px solid var(--line);border-radius:16px;padding:24px }.panel h2 { font-size:20px;margin:0 0 5px }.hint { font-size:13px;color:var(--muted);margin:0 0 20px }
+    label { display:block;font-size:13px;font-weight:650;margin:14px 0 5px } input,select { width:100%;border:1px solid #cdd8cd;border-radius:8px;background:white;padding:10px 11px;color:var(--ink);min-height:43px } input[aria-invalid=true],select[aria-invalid=true] { border-color:var(--red) }.error { font-size:12px;color:var(--red);margin:3px 0 }
+    .row { display:grid;grid-template-columns:1fr 1fr;gap:12px }.item { border:1px solid var(--line);padding:10px;border-radius:10px;margin-top:12px;background:var(--paper) }.item label { margin-top:4px }.item .remove { float:right;margin-top:6px }.actions { display:flex;gap:8px;flex-wrap:wrap;margin-top:16px }
+    .btn { border:1px solid var(--line);border-radius:9px;background:white;color:var(--green);padding:9px 14px;font-weight:650;font-size:13px }.primary { background:var(--green);border-color:var(--green);color:white }.danger { color:var(--red) }.wide { width:100%;margin-top:15px }.small { padding:5px 9px;font-size:12px }
+    .list-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px }.list-heading h2 { margin:0;font:26px Georgia }.cards { display:grid;gap:14px }.card { border:1px solid var(--line);border-radius:14px;padding:22px;background:white }.card-top { display:flex;justify-content:space-between;gap:12px }.card h3 { margin:0 0 5px;font-size:18px;overflow-wrap:anywhere }.card p { font-size:14px;color:var(--muted);margin:7px 0;overflow-wrap:anywhere }.badge { border-radius:20px;padding:4px 9px;background:var(--light);font-size:11px;font-weight:750;white-space:nowrap;align-self:start }.items { display:flex;gap:6px;flex-wrap:wrap;margin:15px 0 }.chip { border:1px solid var(--line);padding:5px 10px;border-radius:6px;font-size:12px }
+    #mensagem { margin:12px 0;padding:14px 18px;background:var(--light);border-radius:10px } #mensagem[data-tipo=erro] { color:var(--red);background:#fff0ec }.empty { border:1px dashed #b6c6b5;border-radius:14px;padding:48px 24px;text-align:center;color:var(--muted) }.empty b { display:block;color:var(--ink);margin-bottom:6px }.footer { border-top:1px solid var(--line);padding-top:20px;margin-top:38px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:15px }
+    [hidden] { display:none!important } @media(max-width:850px) { .workspace { grid-template-columns:1fr }.hero { grid-template-columns:1fr }.note { display:none }.bar,main { padding-left:18px;padding-right:18px } nav a { display:none } h1 { letter-spacing:-1px }.stats { gap:6px }.stat { padding:12px }.stat span { font-size:11px } }.filter { max-width:200px }
+  </style>
+</head>
+<body>
+<header><div class="bar"><a class="brand" href="/alimenta.html"><span class="mark" aria-hidden="true">a</span>alimenta</a><nav aria-label="Navegação"><a href="/docs">Documentação da API ↗</a><a href="/crud.html">Exemplo didático</a><span class="ods">ODS 2 · Fome zero</span></nav></div></header>
+<main>
+  <section class="hero"><div><span class="eyebrow">Rede local de solidariedade</span><h1>Alimento compartilhado.<br><em>Comunidade fortalecida.</em></h1><p class="intro">Conecte doações aos pontos de coleta do seu bairro. Uma rede simples para fazer os alimentos chegarem mais longe.</p></div><aside class="note"><strong>Uma pequena ação, um destino melhor.</strong>Cadastre um ponto de coleta, ofereça alimentos e acompanhe a rede.<br><br>Prova de conceito acadêmica · AEP 2026.2</aside></section>
+  <div class="stats"><div class="stat"><b id="total-doacoes">—</b><span>doações cadastradas</span></div><div class="stat"><b id="total-pontos">—</b><span>pontos de coleta</span></div><div class="stat"><b id="total-itens">—</b><span>tipos de item cadastrados</span></div></div>
+  <div id="mensagem" role="status" aria-live="polite" hidden></div>
+  <div class="tabs" role="tablist" aria-label="Gerenciar rede"><button id="tab-doacoes" class="tab" role="tab" aria-selected="true" aria-controls="doacoes">Doações</button><button id="tab-pontos" class="tab" role="tab" aria-selected="false" aria-controls="pontos">Pontos de coleta</button></div>
+  <section id="doacoes" class="workspace" role="tabpanel" aria-labelledby="tab-doacoes">
+    <form id="form-doacao" class="panel" novalidate><h2 id="titulo-doacao">Oferecer alimentos</h2><p class="hint">Todos os campos são obrigatórios. Use a menor validade entre os alimentos do lote.</p>
+      <label for="doador">Doador ou organização</label><input id="doador" name="doador" maxlength="100" placeholder="Ex.: Mercado do bairro" required>
+      <label for="pontoColetaId">Ponto de coleta</label><select id="pontoColetaId" name="pontoColetaId" required><option value="">Cadastre um ponto primeiro</option></select>
+      <label for="validade">Validade do lote</label><input id="validade" name="validade" type="date" required>
+      <div id="itens"></div><button type="button" id="adicionar-item" class="btn wide">+ Adicionar alimento</button>
+      <div class="actions"><button class="btn primary" type="submit">Salvar doação</button><button class="btn" type="button" id="cancelar-doacao" hidden>Cancelar edição</button></div>
+    </form>
+    <div><div class="list-heading"><h2>Doações da comunidade</h2><button type="button" class="btn atualizar">Atualizar</button></div><div id="lista-doacoes" class="cards"></div></div>
+  </section>
+  <section id="pontos" class="workspace" role="tabpanel" aria-labelledby="tab-pontos" hidden>
+    <form id="form-ponto" class="panel" novalidate><h2 id="titulo-ponto">Novo ponto de coleta</h2><p class="hint">Um endereço de referência para receber as doações.</p>
+      <label for="ponto-nome">Nome do ponto</label><input id="ponto-nome" name="nome" maxlength="100" required>
+      <label for="rua">Rua e número</label><input id="rua" name="endereco.rua" maxlength="150" required>
+      <label for="bairro">Bairro</label><input id="bairro" name="endereco.bairro" maxlength="80" required>
+      <div class="row"><div><label for="cidade">Cidade</label><input id="cidade" name="endereco.cidade" maxlength="80" required></div><div><label for="estado">UF</label><input id="estado" name="endereco.estado" maxlength="2" placeholder="PR" required></div></div>
+      <div class="actions"><button class="btn primary" type="submit">Salvar ponto</button><button class="btn" type="button" id="cancelar-ponto" hidden>Cancelar edição</button></div>
+    </form>
+    <div><div class="list-heading"><h2>Pontos parceiros</h2><button type="button" class="btn atualizar">Atualizar</button></div><div id="lista-pontos" class="cards"></div></div>
+  </section>
+  <footer class="footer"><span>Alimenta · PoC acadêmica · Dados locais de demonstração</span><a href="https://brasil.un.org/pt-br/sdgs/2" target="_blank" rel="noreferrer">Conheça o ODS 2 ↗</a></footer>
+</main>
+<script>
+"use strict";
+const $ = (seletor) => document.querySelector(seletor);
+let pontos = [], doacoes = [], editandoDoacao = null, editandoPonto = null, ocupado = false;
+function elemento(tag, texto, classe) { const e = document.createElement(tag); if (texto !== undefined) e.textContent = texto; if (classe) e.className = classe; return e; }
+function mensagem(texto, tipo = "sucesso") { const e = $("#mensagem"); e.textContent = texto; e.dataset.tipo = tipo; e.hidden = false; }
+async function api(caminho, method = "GET", body) {
+  const r = await fetch(`/api/${caminho}`, {method, headers:{"Content-Type":"application/json"}, ...(body === undefined ? {} : {body:JSON.stringify(body)})});
+  if (!r.ok) { let erro; try { erro = await r.json(); } catch { erro = {message:`Não foi possível concluir a operação (${r.status}).`}; } throw erro; }
+  return r.status === 204 ? null : r.json();
+}
+function limparErros(form) { form.querySelectorAll(".error").forEach(e => e.remove()); form.querySelectorAll("[aria-invalid]").forEach(e => {e.removeAttribute("aria-invalid");e.removeAttribute("aria-describedby");}); }
+function erros(form, erro) {
+  mensagem(erro.message || "Não foi possível conectar à API. Confira se a aplicação está em execução.", "erro");
+  if (!form) return;
+  limparErros(form);
+  Object.entries(erro.fieldErrors || {}).forEach(([campo, texto], i) => {
+    const input = Array.from(form.elements).find(e => e.name === campo);
+    if (input) { const aviso = elemento("p", texto, "error"); aviso.id = `${form.id}-erro-${i}`; input.setAttribute("aria-invalid","true"); input.setAttribute("aria-describedby",aviso.id); input.after(aviso); }
+  });
+  form.querySelector("[aria-invalid=true]")?.focus();
+}
+async function operacao(acao, form) {
+  if (ocupado) return;
+  ocupado = true; document.querySelectorAll("button").forEach(b => b.disabled = true);
+  try { await acao(); } catch (erro) { erros(form, erro); }
+  finally { ocupado = false; document.querySelectorAll("button").forEach(b => b.disabled = false); }
+}
+function botao(texto, acao, classe = "") { const b = elemento("button", texto, `btn ${classe}`); b.type="button"; b.addEventListener("click", () => operacao(acao)); return b; }
+function vazio(lista, titulo, texto) { const e=elemento("div", undefined,"empty"); e.append(elemento("b",titulo),elemento("span",texto)); lista.append(e); }
+function adicionarItem(item = {nome:"",quantidade:1,unidade:"kg"}) {
+  if ($("#itens").children.length >= 20) return mensagem("Cada doação aceita até 20 itens.", "erro");
+  const caixa=elemento("div",undefined,"item");
+  caixa.innerHTML='<label>Alimento<input data-campo="nome" maxlength="80" required></label><div class="row"><label>Quantidade<input data-campo="quantidade" type="number" min="1" step="1" required></label><label>Unidade<select data-campo="unidade"><option value="kg">kg</option><option value="litro">litro</option><option value="unidade">unidade</option></select></label></div>';
+  for (const campo of ["nome","quantidade","unidade"]) caixa.querySelector(`[data-campo=${campo}]`).value=item[campo];
+  const remover=elemento("button","Remover alimento","btn small");remover.type="button";
+  remover.addEventListener("click",()=>{if ($("#itens").children.length>1) {caixa.remove();nomearItens();} else mensagem("Mantenha pelo menos um alimento.","erro");});
+  caixa.append(remover);$("#itens").append(caixa);nomearItens();
+}
+function nomearItens() { Array.from($("#itens").children).forEach((e,i)=>e.querySelectorAll("[data-campo]").forEach(input=>input.name=`itens[${i}].${input.dataset.campo}`)); }
+function limparDoacao() { $("#form-doacao").reset();editandoDoacao=null;$("#itens").replaceChildren();adicionarItem();$("#titulo-doacao").textContent="Oferecer alimentos";$("#cancelar-doacao").hidden=true;limparErros($("#form-doacao")); }
+function limparPonto() { $("#form-ponto").reset();editandoPonto=null;$("#titulo-ponto").textContent="Novo ponto de coleta";$("#cancelar-ponto").hidden=true;limparErros($("#form-ponto")); }
+function renderizar() {
+  $("#total-doacoes").textContent=doacoes.length;$("#total-pontos").textContent=pontos.length;$("#total-itens").textContent=doacoes.reduce((n,d)=>n+d.itens.length,0);
+  const selecionado=$("#pontoColetaId").value;$("#pontoColetaId").replaceChildren(new Option(pontos.length?"Selecione um ponto":"Cadastre um ponto primeiro",""));
+  pontos.forEach(p=>$("#pontoColetaId").add(new Option(`${p.nome} · ${p.endereco.cidade}`,p.id)));$("#pontoColetaId").value=selecionado;
+  const lista=$("#lista-doacoes");lista.replaceChildren();
+  if (!doacoes.length) vazio(lista,"Sua rede começa com uma doação","Cadastre um ponto de coleta e ofereça o primeiro lote de alimentos.");
+  doacoes.forEach(d=>{
+    const card=elemento("article",undefined,"card"),topo=elemento("div",undefined,"card-top");topo.append(elemento("h3",d.doador),elemento("span","CADASTRADA","badge"));
+    const ponto=pontos.find(p=>p.id===d.pontoColetaId);
+    card.append(topo,elemento("p",ponto?`${ponto.nome} · ${ponto.endereco.cidade}/${ponto.endereco.estado}`:"Ponto indisponível"),elemento("p",`Validade: ${d.validade.split("-").reverse().join("/")}`));
+    const itens=elemento("div",undefined,"items");d.itens.forEach(i=>itens.append(elemento("span",`${i.quantidade} ${i.unidade} · ${i.nome}`,"chip")));card.append(itens);
+    const acoes=elemento("div",undefined,"actions");
+    acoes.append(botao("Editar",async()=>{const atual=await api(`doacoes/${encodeURIComponent(d.id)}`);limparDoacao();editandoDoacao=atual.id;$("#doador").value=atual.doador;$("#validade").value=atual.validade;$("#pontoColetaId").value=atual.pontoColetaId;$("#itens").replaceChildren();atual.itens.forEach(adicionarItem);$("#titulo-doacao").textContent="Editar doação";$("#cancelar-doacao").hidden=false;$("#doador").focus();}),botao("Excluir",async()=>{if(!confirm(`Excluir a doação de ${d.doador}?`))return;await api(`doacoes/${encodeURIComponent(d.id)}`,"DELETE");if(editandoDoacao===d.id)limparDoacao();await atualizarAposSalvar("Doação excluída.");},"danger"));
+    card.append(acoes);lista.append(card);
+  });
+  const listaPontos=$("#lista-pontos");listaPontos.replaceChildren();
+  if(!pontos.length)vazio(listaPontos,"Nenhum ponto cadastrado","Adicione o primeiro local que receberá os alimentos.");
+  pontos.forEach(p=>{
+    const card=elemento("article",undefined,"card");card.append(elemento("h3",p.nome),elemento("p",`${p.endereco.rua} · ${p.endereco.bairro}`),elemento("p",`${p.endereco.cidade}/${p.endereco.estado}`));
+    const acoes=elemento("div",undefined,"actions");acoes.append(botao("Editar",async()=>{const atual=await api(`pontos-coleta/${encodeURIComponent(p.id)}`);limparPonto();editandoPonto=atual.id;$("#ponto-nome").value=atual.nome;for(const c of ["rua","bairro","cidade","estado"])$(`#${c}`).value=atual.endereco[c];$("#titulo-ponto").textContent="Editar ponto de coleta";$("#cancelar-ponto").hidden=false;$("#ponto-nome").focus();}),botao("Excluir",async()=>{if(!confirm(`Excluir o ponto ${p.nome}?`))return;await api(`pontos-coleta/${encodeURIComponent(p.id)}`,"DELETE");if(editandoPonto===p.id)limparPonto();await atualizarAposSalvar("Ponto excluído.");},"danger"));card.append(acoes);listaPontos.append(card);
+  });
+}
+async function carregar() { const dados=await Promise.all([api("pontos-coleta"),api("doacoes")]);[pontos,doacoes]=dados;renderizar(); }
+async function atualizarAposSalvar(texto) { try {await carregar();mensagem(texto);} catch {mensagem(`${texto} A atualização da lista falhou. Clique em Atualizar para consultar o resultado.`,"erro");} }
+$("#form-doacao").addEventListener("submit",e=>{e.preventDefault();operacao(async()=>{limparErros(e.target);const body={doador:$("#doador").value,pontoColetaId:$("#pontoColetaId").value,validade:$("#validade").value||null,itens:Array.from($("#itens").children).map(item=>({nome:item.querySelector('[data-campo=nome]').value,quantidade:Number(item.querySelector('[data-campo=quantidade]').value),unidade:item.querySelector('[data-campo=unidade]').value}))};await api(editandoDoacao?`doacoes/${encodeURIComponent(editandoDoacao)}`:"doacoes",editandoDoacao?"PUT":"POST",body);limparDoacao();await atualizarAposSalvar("Doação salva com sucesso.");},e.target);});
+$("#form-ponto").addEventListener("submit",e=>{e.preventDefault();operacao(async()=>{limparErros(e.target);const body={nome:$("#ponto-nome").value,endereco:{rua:$("#rua").value,bairro:$("#bairro").value,cidade:$("#cidade").value,estado:$("#estado").value.toUpperCase()}};await api(editandoPonto?`pontos-coleta/${encodeURIComponent(editandoPonto)}`:"pontos-coleta",editandoPonto?"PUT":"POST",body);limparPonto();await atualizarAposSalvar("Ponto de coleta salvo. Agora você pode oferecer alimentos.");},e.target);});
+for(const aba of ["doacoes","pontos"])$(`#tab-${aba}`).addEventListener("click",()=>{for(const nome of ["doacoes","pontos"]){$(`#${nome}`).hidden=nome!==aba;$(`#tab-${nome}`).setAttribute("aria-selected",String(nome===aba));}});
+$("#adicionar-item").addEventListener("click",()=>adicionarItem());$("#cancelar-doacao").addEventListener("click",limparDoacao);$("#cancelar-ponto").addEventListener("click",limparPonto);document.querySelectorAll(".atualizar").forEach(b=>b.addEventListener("click",()=>operacao(async()=>{await carregar();mensagem("Lista atualizada.");})));
+adicionarItem();operacao(carregar);
+</script>
+</body>
+</html>
