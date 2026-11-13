@@ -50,6 +50,7 @@ class ProjectWebPagesTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(content().string(allOf(
                         containsString("AEP Mongo Java 2026"),
+                        containsString("href=\"/alimenta.html\""),
                         containsString("href=\"/docs\""),
                         containsString("href=\"/crud.html\""))));
     }
@@ -79,7 +80,7 @@ class ProjectWebPagesTest {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.info.title").value("API de Linguagens de Programação"))
+                .andExpect(jsonPath("$.info.title").value("Alimenta — API de Doações de Alimentos"))
                 .andExpect(jsonPath("$.info.version").value("v1"))
                 .andExpect(jsonPath("$.paths['/api/linguagens']").exists())
                 .andExpect(jsonPath("$.paths['/api/linguagens'].post.responses['201']").exists())

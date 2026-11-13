@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Pattern;
 
 public record ItemAlimentoRequest(
-        @NotBlank @Size(max = 80) String nome,
+        @NotBlank(message = "campo obrigatório") @Size(max = 80, message = "respeite o tamanho permitido") String nome,
         @Positive(message = "a quantidade deve ser maior que zero") int quantidade,
-        @NotBlank @Pattern(regexp = "kg|litro|unidade", message = "use kg, litro ou unidade") String unidade) {
+        @NotBlank(message = "campo obrigatório") @Pattern(regexp = "kg|litro|unidade", message = "use kg, litro ou unidade") String unidade) {
 }

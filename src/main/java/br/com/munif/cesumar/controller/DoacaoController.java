@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import br.com.munif.cesumar.dto.*;
 import br.com.munif.cesumar.service.DoacaoService;
+import br.com.munif.cesumar.model.StatusDoacao;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 
@@ -17,7 +18,18 @@ public class DoacaoController {
     public DoacaoController(DoacaoService service) { this.service = service; }
 
     @GetMapping
-    public List<DoacaoResponse> listar() { return service.listar(); }
+    public List<DoacaoResponse> listar(@RequestParam(required = false) StatusDoacao status) { return service.listar(status); }
+
+    @GetMapping("/resumo")
+    public DoacaoResumoResponse resumo() { return service.resumo(); }
+
+    @PostMapping("/{id}/reserva")
+    public DoacaoResponse reservar(@PathVariable String id, @Valid @RequestBody ReservaDoacaoRequest request) {
+        return service.reservar(id, request);
+    }
+
+    @PostMapping("/{id}/entrega")
+    public DoacaoResponse entregar(@PathVariable String id) { return service.entregar(id); }
 
     @GetMapping("/{id}")
     public DoacaoResponse buscarPorId(@PathVariable String id) { return service.buscarPorId(id); }

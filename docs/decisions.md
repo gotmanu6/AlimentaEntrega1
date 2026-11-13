@@ -1,5 +1,12 @@
 # Decisões arquiteturais
 
+## Evolução AEP 2026.2 — Alimenta
+
+O exemplo inicial foi preservado, e a PoC social foi implementada como domínio adicional
+no mesmo package base. As decisões do Alimenta, incluindo duas coleções relacionadas,
+records separados dos DTOs, histórico aninhado, controle de versão e migração, estão em
+[alimenta-arquitetura.md](alimenta-arquitetura.md). Nenhuma dependência Java foi adicionada.
+
 ## ADR-001 — Java 21
 
 **Decisão:** utilizar Java 21.

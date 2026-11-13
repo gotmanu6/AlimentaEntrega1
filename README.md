@@ -23,6 +23,14 @@ A proposta se alinha ao **ODS 2 — Fome zero e agricultura sustentável**, espe
 - Bloqueio de lotes vencidos e de exclusão de pontos com doações vinculadas.
 - Interface web sem dependências externas, validação por campo e OpenAPI.
 
+## Evolução da segunda entrega
+
+- Reserva do lote inteiro para uma organização beneficiária e confirmação da entrega.
+- Histórico com situações e instantes; proteção contra reserva dupla por versão otimista.
+- Bloqueio de edição e exclusão após reserva e de movimentação de alimentos vencidos.
+- Filtro de doações por situação e indicadores calculados com os dados persistidos.
+- Migração idempotente da primeira versão e testes adicionais do cliente JavaScript.
+
 O exemplo original de linguagens permanece em `/crud.html` e `/api/linguagens`. Seu README está em [docs/projeto-base.md](docs/projeto-base.md). A PoC avaliada é o **Alimenta**.
 
 ## Tecnologias e organização
@@ -44,6 +52,21 @@ Linux/macOS: use `./mvnw` no lugar de `.\mvnw.cmd`.
 
 Abra [Alimenta](http://localhost:8080/alimenta.html) e [Swagger UI](http://localhost:8080/docs). Cadastre um ponto na aba **Pontos de coleta**, volte a **Doações**, informe doador, ponto, validade e alimentos e salve.
 
+Na versão final, clique em **Reservar lote**, informe uma organização fictícia e confirme.
+Depois clique em **Confirmar entrega**. O cartão mostra o histórico e o painel atualiza os
+totais. Dados de demonstração criados pela interface ficam no banco até serem removidos.
+
+Se estiver evoluindo um banco da primeira versão, pare a aplicação e migre antes de
+iniciar a segunda (não é necessário em um banco novo):
+
+```powershell
+Get-Content scripts/migrar-entrega1.js -Raw | docker compose exec -T mongo mongosh linguagens -u root -p Mongo --authenticationDatabase admin --quiet
+```
+
+O script preenche apenas os campos novos dos documentos antigos. Pode ser repetido
+sem desfazer reservas ou inventar eventos históricos. Para Linux/macOS, use
+`docker compose exec -T mongo mongosh linguagens -u root -p Mongo --authenticationDatabase admin --quiet < scripts/migrar-entrega1.js`.
+
 A URI local padrão é `mongodb://root:Mongo@localhost:27018/linguagens?authSource=admin`. O nome do banco foi preservado; `pontos_coleta` e `doacoes` são coleções independentes. Para trocar a instância:
 
 ```powershell
@@ -60,15 +83,26 @@ Mongo Express: [localhost:18081](http://localhost:18081), usuário `cesumar`, se
 .\mvnw.cmd clean test
 # Suíte completa, MongoDB real isolado e cobertura mínima de 70%
 .\mvnw.cmd clean verify
+# Cliente JavaScript: requer Node.js 20 ou superior, sem npm install
+node --test src/test/js/*.test.cjs
 ```
 
 Abra `target/site/jacoco/index.html`. Os testes de integração criam seu próprio MongoDB com Testcontainers e não usam o banco de desenvolvimento. O JaCoCo mede Java; a configuração exclui bootstrap e configuração. A interface é verificada separadamente por testes HTTP e no navegador; o percentual Java não representa cobertura de JavaScript.
+
+| Marco validado | Testes Java | Testes JavaScript | Linhas Java cobertas |
+|---|---:|---:|---:|
+| Primeira entrega | 50 | — | 173/173 (100%) |
+| Segunda entrega | 63 | 12 | 221/221 (100%) |
+
+Os XML/CSV e manifestos em `docs/evidencias/` permitem conferir o escopo por classe.
+O limiar obrigatório de 70% é aplicado pelo Maven; não depende desta tabela.
 
 ## Documentação e avaliação
 
 - [Arquitetura e modelagem NoSQL](docs/alimenta-arquitetura.md)
 - [Requisitos e evidências](docs/requisitos-aep.md)
 - [Quadro de tarefas](docs/quadro-tarefas.md)
+- [Pacotes, vídeos e evidências das duas entregas](docs/entregas.md)
 - [Comandos operacionais](HARNESS.md)
 
 Equipe: nomes e RAs ainda não informados. Os commits e a publicação no GitHub serão feitos pela equipe, conforme orientação recebida. O remoto original identifica o projeto-base. Não há alegação de implantação pública ou impacto social medido.

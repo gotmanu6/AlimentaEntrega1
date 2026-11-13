@@ -13,8 +13,8 @@ public class OpenApiConfiguration {
     OpenAPI linguagemOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("API de Linguagens de Programação")
-                        .description("API REST didática da disciplina de Paradigmas de Programação")
+                        .title("Alimenta — API de Doações de Alimentos")
+                        .description("PoC AEP 2026.2, ODS 2. Inclui o exemplo didático de linguagens de programação.")
                         .version("v1"));
     }
 }

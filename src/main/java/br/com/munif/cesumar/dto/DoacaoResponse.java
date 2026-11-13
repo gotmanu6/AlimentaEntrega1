@@ -4,5 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record DoacaoResponse(String id, String pontoColetaId, String doador,
-                            LocalDate validade, List<ItemAlimentoResponse> itens) {
+                            LocalDate validade, List<ItemAlimentoResponse> itens, String status,
+                            String beneficiario, List<EventoDoacaoResponse> historico, boolean vencida) {
 }

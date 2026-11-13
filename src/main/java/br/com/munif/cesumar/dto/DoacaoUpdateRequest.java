@@ -8,8 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record DoacaoUpdateRequest(
-        @NotBlank String pontoColetaId,
-        @NotBlank @Size(max = 100) String doador,
-        @NotNull LocalDate validade,
-        @NotNull @Size(min = 1, max = 20) List<@NotNull @Valid ItemAlimentoRequest> itens) {
+        @NotBlank(message = "campo obrigatório") String pontoColetaId,
+        @NotBlank(message = "campo obrigatório") @Size(max = 100, message = "respeite o tamanho permitido") String doador,
+        @NotNull(message = "campo obrigatório") LocalDate validade,
+        @NotNull(message = "campo obrigatório") @Size(min = 1, max = 20, message = "respeite o tamanho permitido") List<@NotNull(message = "campo obrigatório") @Valid ItemAlimentoRequest> itens) {
 }

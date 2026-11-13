@@ -8,6 +8,10 @@ todos os testes e exigir cobertura Java mínima de 70%. O teste `AlimentaApiIT`
 valida pontos, doações e subdocumentos em MongoDB real e isolado.
 As instruções abaixo do projeto-base continuam aplicáveis à infraestrutura.
 
+Testes do cliente, sem bibliotecas externas: `node --test src/test/js/*.test.cjs`
+(Node.js 20+). O helper HTTP é testado separadamente; JaCoCo mede apenas Java.
+Migração entre os marcos, relatórios preservados e vídeos: `docs/entregas.md`.
+
 Este arquivo documenta como validar e operar o projeto. Ele complementa, mas não substitui, o contrato de desenvolvimento em `AGENTS.md`.
 
 ## Pré-requisitos

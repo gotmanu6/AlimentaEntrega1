@@ -44,6 +44,7 @@ class AlimentaApiIT {
     @Autowired private ObjectMapper json;
     @Autowired private PontoColetaRepository pontos;
     @Autowired private DoacaoRepository doacoes;
+    @Autowired private org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
 
     @BeforeEach
     void limpar() { doacoes.deleteAll(); pontos.deleteAll(); }
@@ -147,6 +148,104 @@ class AlimentaApiIT {
 
     private PontoColeta ponto() {
         return pontos.save(new PontoColeta(null, "Centro", new Endereco("Rua A, 10", "Centro", "Maringá", "PR")));
+    }
+
+    @Test
+    void deveReservarEntregarEConsultarHistoricoPersistido() throws Exception {
+        String id = criarDoacao();
+        mvc.perform(post("/api/doacoes/" + id + "/entrega")).andExpect(status().isConflict());
+        mvc.perform(post("/api/doacoes/" + id + "/reserva").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"beneficiario\":\"Associação exemplo\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("RESERVADA"));
+        mvc.perform(get("/api/doacoes").param("status", "RESERVADA"))
+                .andExpect(jsonPath("$.length()").value(1));
+        mvc.perform(post("/api/doacoes/" + id + "/entrega"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("ENTREGUE"))
+                .andExpect(jsonPath("$.historico.length()").value(3));
+        Doacao entregue = doacoes.findById(id).orElseThrow();
+        assertEquals(StatusDoacao.ENTREGUE, entregue.status());
+        assertEquals("Associação exemplo", entregue.beneficiario());
+        assertEquals(2L, entregue.versao());
+        mvc.perform(post("/api/doacoes/" + id + "/entrega")).andExpect(status().isConflict());
+        mvc.perform(delete("/api/doacoes/" + id)).andExpect(status().isConflict());
+        mvc.perform(get("/api/doacoes/resumo")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.disponiveis").value(0)).andExpect(jsonPath("$.entregues").value(1));
+    }
+
+    @Test
+    void deveValidarBeneficiarioFiltroERecursoAusente() throws Exception {
+        String id = criarDoacao();
+        mvc.perform(post("/api/doacoes/" + id + "/reserva").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"beneficiario\":\" \"}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.fieldErrors.beneficiario").exists());
+        mvc.perform(get("/api/doacoes").param("status", "INVALIDA")).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/doacoes/ausente/entrega")).andExpect(status().isNotFound());
+        mvc.perform(post("/api/doacoes/ausente/reserva").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"beneficiario\":\"Associação\"}")).andExpect(status().isNotFound());
+        assertEquals(StatusDoacao.DISPONIVEL, doacoes.findById(id).orElseThrow().status());
+    }
+
+    @Test
+    void deveImpedirDuasReservasConcorrentes() throws Exception {
+        String id = criarDoacao();
+        var inicio = new java.util.concurrent.CountDownLatch(1);
+        try (var executor = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            java.util.concurrent.Callable<Integer> reservar = () -> {
+                inicio.await();
+                return mvc.perform(post("/api/doacoes/" + id + "/reserva")
+                                .contentType(MediaType.APPLICATION_JSON).content("{\"beneficiario\":\"Associação\"}"))
+                        .andReturn().getResponse().getStatus();
+            };
+            var primeira = executor.submit(reservar);
+            var segunda = executor.submit(reservar);
+            inicio.countDown();
+            var codigos = new java.util.ArrayList<>(List.of(primeira.get(10, java.util.concurrent.TimeUnit.SECONDS),
+                    segunda.get(10, java.util.concurrent.TimeUnit.SECONDS)));
+            codigos.sort(Integer::compareTo);
+            assertEquals(List.of(200, 409), codigos);
+        }
+        assertEquals(2, doacoes.findById(id).orElseThrow().historico().size());
+    }
+
+    @Test
+    void deveRecusarGravacaoComVersaoDesatualizadaNoMongo() throws Exception {
+        String id = criarDoacao();
+        Doacao primeiraLeitura = doacoes.findById(id).orElseThrow();
+        Doacao leituraDesatualizada = doacoes.findById(id).orElseThrow();
+        doacoes.save(primeiraLeitura);
+        assertThrows(org.springframework.dao.OptimisticLockingFailureException.class,
+                () -> doacoes.save(leituraDesatualizada));
+    }
+
+    private String criarDoacao() throws Exception {
+        var response = mvc.perform(post("/api/doacoes").contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(doacao(ponto().id()))))
+                .andExpect(status().isCreated()).andReturn().getResponse();
+        return json.readTree(response.getContentAsString()).get("id").asText();
+    }
+
+    @Test
+    void deveMigrarPrimeiraEntregaSemPerderDadosENemRepetirMigracao() throws Exception {
+        String pontoId = ponto().id();
+        mongoTemplate.getCollection("doacoes").insertOne(new org.bson.Document("_id", "legado")
+                .append("pontoColetaId", pontoId).append("doador", "Mercado original")
+                .append("validade", java.util.Date.from(java.time.Instant.now().plus(30, java.time.temporal.ChronoUnit.DAYS)))
+                .append("itens", List.of(new org.bson.Document("nome", "Arroz").append("quantidade", 2).append("unidade", "kg"))));
+        String script = java.nio.file.Files.readString(java.nio.file.Path.of("scripts/migrar-entrega1.js"));
+        String banco = new com.mongodb.ConnectionString(MONGO.getReplicaSetUrl()).getDatabase();
+        assertEquals(0, MONGO.execInContainer("mongosh", banco, "--quiet", "--eval", script).getExitCode());
+        Doacao migrada = doacoes.findById("legado").orElseThrow();
+        assertEquals("Mercado original", migrada.doador());
+        assertEquals(StatusDoacao.DISPONIVEL, migrada.status());
+        assertEquals(0L, migrada.versao());
+        assertTrue(migrada.historico().isEmpty());
+        mvc.perform(post("/api/doacoes/legado/reserva").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"beneficiario\":\"Associação\"}")).andExpect(status().isOk());
+        assertEquals(0, MONGO.execInContainer("mongosh", banco, "--quiet", "--eval", script).getExitCode());
+        Doacao preservada = doacoes.findById("legado").orElseThrow();
+        assertEquals(StatusDoacao.RESERVADA, preservada.status());
+        assertEquals(1L, preservada.versao());
+        assertEquals(1, preservada.historico().size());
     }
 
     private EnderecoRequest endereco() { return new EnderecoRequest("Rua A, 10", "Centro", "Maringá", "PR"); }

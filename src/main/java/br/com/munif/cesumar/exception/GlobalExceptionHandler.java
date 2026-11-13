@@ -15,6 +15,18 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handleConcorrencia(HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, "A doação foi alterada por outra operação. Atualize a lista.",
+                request.getRequestURI(), Map.of());
+    }
+
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleParametroInvalido(HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Parâmetro inválido. Situações: DISPONIVEL, RESERVADA ou ENTREGUE.",
+                request.getRequestURI(), Map.of());
+    }
+
     @ExceptionHandler(RecursoNotFoundException.class)
     public ResponseEntity<ApiError> handleRecursoNotFound(RecursoNotFoundException exception, HttpServletRequest request) {
         return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request.getRequestURI(), Map.of());
